@@ -1,0 +1,11 @@
+# Telegram Bot Framework
+aiogram==3.*
+
+# Async HTTP Client (to talk to our backend)
+httpx
+
+# Cache/FSM Storage
+redis
+
+# Configuration
+python-dotenv

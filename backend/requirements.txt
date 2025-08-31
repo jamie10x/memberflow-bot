@@ -1,0 +1,23 @@
+# Web Framework
+fastapi
+uvicorn[standard]
+
+# Database & ORM
+sqlalchemy
+psycopg2-binary
+alembic
+
+# Data Validation
+pydantic[email]
+
+# Background Tasks
+celery
+redis
+
+# Configuration
+python-dotenv
+
+# Security & Auth (we'll need these soon)
+python-jose[cryptography]
+passlib[bcrypt]
+pydantic-settings
