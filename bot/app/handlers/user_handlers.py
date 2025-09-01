@@ -56,7 +56,7 @@ async def cmd_dashboard(message: types.Message):
     Replies with a button to open the Mini App dashboard.
     """
     # Update this line with your ngrok URL
-    webapp_url = "https://651d75984d1d.ngrok-free.app"
+    webapp_url = "https://c55919e87a0e.ngrok-free.app"
 
     await message.answer(
         "Welcome to your MemberFlow dashboard! Here you can manage your plans, view subscribers, and track your revenue.",

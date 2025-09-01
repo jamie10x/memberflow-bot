@@ -3,13 +3,15 @@ from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Define the project's root directory.
-# `Path(__file__).resolve()` gets the absolute path to this file.
-# `.parents[3]` goes up 3 levels from `.../backend/app/core/` to the project root.
 BASE_DIR = Path(__file__).resolve().parents[3]
 
 class Settings(BaseSettings):
+    # These are loaded from the .env file
     DATABASE_URL: str
     SECRET_KEY: str
+    BOT_TOKEN: str  # <-- ADD THIS LINE
+
+    # These have default values
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 

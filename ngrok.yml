@@ -1,0 +1,11 @@
+# ngrok.yml
+version: 2
+authtoken: 326AxBIQ7UjH3kuLN4qL5wWNwKp_vWtazsQRuYBYDKPf6ENz
+
+tunnels:
+  frontend:
+    proto: http
+    addr: 5173  # Your Vite server port
+  backend:
+    proto: http
+    addr: 8000  # Your FastAPI server port

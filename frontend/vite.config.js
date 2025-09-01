@@ -15,6 +15,6 @@ export default defineConfig({
             host: 'localhost',
         },
         // add your ngrok domain to the list of allowed hosts
-        allowedHosts: ['651d75984d1d.ngrok-free.app']
+        allowedHosts: ['c55919e87a0e.ngrok-free.app']
     },
 })

@@ -1,29 +1,38 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import globals from "globals";
+import pluginJs from "@eslint/js";
+import pluginReact from "eslint-plugin-react";
+import pluginReactHooks from "eslint-plugin-react-hooks";
+import pluginReactRefresh from "eslint-plugin-react-refresh";
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{js,jsx}'],
-    extends: [
-      js.configs.recommended,
-      reactHooks.configs['recommended-latest'],
-      reactRefresh.configs.vite,
-    ],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        ecmaFeatures: { jsx: true },
-        sourceType: 'module',
-      },
+export default [
+    // Global configuration
+    {
+        files: ["**/*.{js,mjs,cjs,jsx}"],
+        plugins: {
+            react: pluginReact,
+            'react-hooks': pluginReactHooks,
+            'react-refresh': pluginReactRefresh,
+        },
+        languageOptions: {
+            parserOptions: {
+                ecmaFeatures: {
+                    jsx: true,
+                },
+            },
+            globals: {
+                ...globals.browser,
+                // This is the key fix. We declare the entire Telegram object structure.
+                Telegram: 'readonly',
+            },
+        },
+        // Rules for all JS/JSX files
+        rules: {
+            ...pluginReact.configs.recommended.rules,
+            ...pluginReactHooks.configs.recommended.rules,
+            'react-refresh/only-export-components': 'warn',
+            // You can add other rules here if needed
+        },
     },
-    rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
-    },
-  },
-])
+    // Apply JS-specific recommended rules
+    pluginJs.configs.recommended,
+];

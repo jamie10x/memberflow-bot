@@ -21,3 +21,5 @@ python-dotenv
 python-jose[cryptography]
 passlib[bcrypt]
 pydantic-settings
+python-telegram-bot==22.3
+hypercorn
