@@ -1,10 +1,11 @@
 // frontend/src/App.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import './App.css';
-import { getMyPlans, getMyChannels } from './apiClient';
+import { getMyPlans, getMyChannels, createMyPlan } from './apiClient';
+import Modal from './components/Modal';
+import CreatePlanForm from './components/CreatePlanForm';
+import PaymentSettings from './components/PaymentSettings';
 
-// Assign the global Telegram object to a constant.
-// This is safe because it's only assigned once.
 const tg = window.Telegram?.WebApp;
 
 function App() {
@@ -13,88 +14,119 @@ function App() {
     const [channels, setChannels] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [newPlanData, setNewPlanData] = useState(null);
+    const [currentPage, setCurrentPage] = useState('dashboard'); // 'dashboard' or 'settings'
 
     useEffect(() => {
-        // Check for the Telegram WebApp object.
         if (!tg) {
             setError("This app must be run inside the Telegram client.");
             setLoading(false);
             return;
         }
-
-        // Set user data immediately for a better UI experience.
         setUser(tg.initDataUnsafe?.user || null);
         tg.ready();
         tg.expand();
 
-        // Use an Immediately Invoked Function Expression (IIFE)
-        // to handle the async data fetching. This resolves the
-        // "Promise returned from fetchData is ignored" warning.
         (async () => {
             try {
-                const [plansData, channelsData] = await Promise.all([
-                    getMyPlans(),
-                    getMyChannels(),
-                ]);
+                const [plansData, channelsData] = await Promise.all([getMyPlans(), getMyChannels()]);
                 setPlans(plansData);
                 setChannels(channelsData);
             } catch (err) {
                 setError(err.message);
-                console.error("Failed to fetch dashboard data:", err);
             } finally {
                 setLoading(false);
             }
         })();
-    }, []); // Empty array ensures this effect runs only once on mount.
+    }, []);
 
-    // Render a loading state while fetching data.
-    if (loading) {
-        return <div className="App"><p>Loading your data...</p></div>;
-    }
+    const handleCreatePlanClick = useCallback(async () => {
+        if (!newPlanData || !newPlanData.name || newPlanData.price <= 0) {
+            tg.HapticFeedback.notificationOccurred('error');
+            return;
+        }
+        tg.MainButton.showProgress();
+        tg.MainButton.disable();
+        try {
+            const newPlan = await createMyPlan(newPlanData);
+            setPlans(prevPlans => [...prevPlans, newPlan]);
+            tg.HapticFeedback.notificationOccurred('success');
+            closeCreatePlanModal();
+        } catch (err) {
+            tg.HapticFeedback.notificationOccurred('error');
+            tg.showAlert(`Error creating plan: ${err.message}`);
+        } finally {
+            tg.MainButton.hideProgress();
+        }
+    }, [newPlanData]);
 
-    // Render an error state if something went wrong.
-    if (error) {
-        return (
-            <div className="App">
-                <div className="error-box">
-                    <p><strong>An error occurred:</strong></p>
-                    <p>{error}</p>
-                </div>
-            </div>
-        );
-    }
+    useEffect(() => {
+        if (isModalOpen) {
+            tg.MainButton.onClick(handleCreatePlanClick);
+            return () => tg.MainButton.offClick(handleCreatePlanClick);
+        }
+    }, [isModalOpen, handleCreatePlanClick]);
 
-    // Render the main dashboard content.
-    return (
-        <div className="App">
-            <h1>Dashboard</h1>
-            {/* Use optional chaining (?.) to safely access properties */}
-            {/* This resolves the "Unresolved variable first_name" warning. */}
-            {user && <p className="welcome-message">Welcome, {user?.first_name}!</p>}
+    const openCreatePlanModal = () => {
+        setIsModalOpen(true);
+        tg.MainButton.setText('Save Plan');
+        tg.MainButton.disable();
+        tg.MainButton.show();
+    };
 
+    const closeCreatePlanModal = () => {
+        setIsModalOpen(false);
+        tg.MainButton.hide();
+    };
+
+    const handleFormDataChange = (data) => {
+        setNewPlanData(data);
+        if (data.name && data.price > 0) {
+            tg.MainButton.enable();
+        } else {
+            tg.MainButton.disable();
+        }
+    };
+
+    if (loading) return <div className="App"><p>Loading...</p></div>;
+    if (error) return <div className="App"><div className="error-box"><p><strong>An error occurred:</strong> {error}</p></div></div>;
+
+    const renderDashboard = () => (
+        <>
             <div className="section">
                 <h2>Your Connected Channels</h2>
                 {channels.length > 0 ? (
-                    <ul>
-                        {channels.map((channel) => (
-                            <li key={channel.id}>✅ {channel.title}</li>
-                        ))}
-                    </ul>
+                    <ul>{channels.map((channel) => (<li key={channel.id}>✅ {channel.title}</li>))}</ul>
                 ) : <p>You haven't connected any channels yet.</p>}
             </div>
-
             <div className="section">
-                <h2>Your Subscription Plans</h2>
+                <div className="section-header">
+                    <h2>Your Subscription Plans</h2>
+                    <button className="create-button" onClick={openCreatePlanModal}>+ Create Plan</button>
+                </div>
                 {plans.length > 0 ? (
-                    <ul>
-                        {plans.map((plan) => (
-                            <li key={plan.id}>
-                                <strong>{plan.name}</strong> - ${plan.price} / {plan.interval}
-                            </li>
-                        ))}
-                    </ul>
+                    <ul>{plans.map((plan) => (<li key={plan.id}><strong>{plan.name}</strong> - ${plan.price} / {plan.interval}</li>))}</ul>
                 ) : <p>You haven't created any plans yet.</p>}
             </div>
+        </>
+    );
+
+    return (
+        <div className="App">
+            <Modal show={isModalOpen} onClose={closeCreatePlanModal} title="Create a New Plan">
+                <CreatePlanForm onDataChange={handleFormDataChange} />
+            </Modal>
+
+            <div className="app-header">
+                <h1>{currentPage === 'dashboard' ? 'Dashboard' : 'Payment Settings'}</h1>
+                <button className="settings-button" onClick={() => setCurrentPage(currentPage === 'dashboard' ? 'settings' : 'dashboard')}>
+                    {currentPage === 'dashboard' ? '⚙️ Settings' : 'Back'}
+                </button>
+            </div>
+            {user && <p className="welcome-message">Welcome, {user?.first_name}!</p>}
+
+            {currentPage === 'dashboard' ? renderDashboard() : <PaymentSettings />}
         </div>
     );
 }

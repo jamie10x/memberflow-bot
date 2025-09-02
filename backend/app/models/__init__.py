@@ -4,3 +4,4 @@ from .channel import Channel
 from .plan import Plan
 from .subscriber import Subscriber
 from .subscription import Subscription
+from .payment_gateway import PaymentGateway

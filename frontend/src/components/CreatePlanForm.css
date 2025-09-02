@@ -1,0 +1,29 @@
+/* frontend/src/components/CreatePlanForm.css */
+.create-plan-form .form-group {
+    margin-bottom: 15px;
+}
+
+.create-plan-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--tg-hint-color);
+}
+
+.create-plan-form input,
+.create-plan-form select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--tg-border-color);
+    border-radius: 6px;
+    background-color: var(--tg-bg-color);
+    color: var(--tg-text-color);
+    font-size: 1em;
+    box-sizing: border-box; /* Important for padding */
+}
+
+.create-plan-form input:focus,
+.create-plan-form select:focus {
+    outline: none;
+    border-color: var(#2481cc);
+}

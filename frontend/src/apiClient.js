@@ -39,3 +39,29 @@ export const fetchApi = async (path, options = {}) => {
 // --- API Functions for our Dashboard ---
 export const getMyPlans = () => fetchApi('/dashboard/plans');
 export const getMyChannels = () => fetchApi('/dashboard/channels');
+
+/**
+ * Creates a new plan for the authenticated user.
+ * @param {object} planData - The data for the new plan.
+ * @param {string} planData.name
+ * @param {number} planData.price
+ * @param {string} planData.currency
+ * @param {string} planData.interval - "month" or "year"
+ */
+export const createMyPlan = (planData) => {
+    return fetchApi('/dashboard/plans', {
+        method: 'POST',
+        body: JSON.stringify(planData),
+    });
+};
+
+export const getMyPaymentSettings = () => {
+    return fetchApi('/dashboard/payment-settings');
+};
+
+export const saveMyPaymentSettings = (settingsData) => {
+    return fetchApi('/dashboard/payment-settings', {
+        method: 'POST',
+        body: JSON.stringify(settingsData),
+    });
+};

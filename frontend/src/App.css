@@ -1,53 +1,72 @@
 /* src/App.css */
-
-/* Define component-specific theme variables */
-:root {
-    --tg-section-bg-color: #f7f7f7;
-    --tg-border-color: #e0e0e0;
-}
-
-html[class*="dark"] {
-    --tg-section-bg-color: #333333;
-    --tg-border-color: #444444;
-}
-
-
 .App {
     max-width: 600px;
     margin: 0 auto;
 }
 
-.welcome-message {
-    font-size: 1.2em;
-    color: var(--tg-hint-color); /* This variable comes from index.css */
-    border-bottom: 1px solid var(--tg-border-color);
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding-bottom: 10px;
+    border-bottom: 1px solid var(--app-border-color);
     margin-bottom: 20px;
+}
+
+.welcome-message {
+    font-size: 1.1em;
+    color: var(--app-hint-color);
+    margin-bottom: 25px;
+    text-align: center;
 }
 
 .section {
-    background-color: var(--tg-section-bg-color);
-    border-radius: 8px;
-    padding: 15px;
+    background-color: var(--app-section-bg-color);
+    border-radius: 12px;
+    padding: 15px 20px;
     margin-bottom: 20px;
 }
 
-h1, h2 {
-    margin-top: 0;
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
 }
 
-ul {
-    list-style: none;
-    padding: 0;
+.section-header h2 {
+    margin-bottom: 0;
 }
 
 li {
-    padding: 10px;
-    border-bottom: 1px solid var(--tg-border-color);
+    padding: 12px 5px;
+    border-bottom: 1px solid var(--app-border-color);
 }
 
 li:last-child {
     border-bottom: none;
+}
+
+.create-button, .settings-button {
+    background-color: var(--app-button-color);
+    color: var(--app-button-text-color);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-size: 0.9em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.settings-button {
+    background-color: var(--app-section-bg-color);
+    color: var(--app-link-color);
+    border: 1px solid var(--app-link-color);
+}
+
+.create-button:hover, .settings-button:hover {
+    opacity: 0.85;
 }
 
 .error-box {
