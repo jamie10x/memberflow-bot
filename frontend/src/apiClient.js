@@ -1,8 +1,8 @@
 // frontend/src/apiClient.js
 
 // IMPORTANT: Replace this with your actual public BACKEND ngrok URL.
-const API_BASE_URL = "https://fbfff81cc4de.ngrok-free.app";
-
+// This is the key line that makes everything work
+const API_BASE_URL = import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:8000';
 // JSDoc Type Definitions for IDE autocompletion and error checking.
 /**
  * @typedef {Object} Plan
