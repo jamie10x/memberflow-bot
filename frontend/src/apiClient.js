@@ -1,90 +1,129 @@
 // frontend/src/apiClient.js
 
-// IMPORTANT: Replace this with your actual public BACKEND ngrok URL.
-// This is the key line that makes everything work
+// This is the key line to add. It exports the Telegram Web App object
+// so it can be safely imported and used by any component.
+export const tg = window.Telegram?.WebApp;
+
+// This is the variable for your backend URL. It uses the Vercel env var
+// in production and falls back to localhost for local development.
 const API_BASE_URL = import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:8000';
-// JSDoc Type Definitions for IDE autocompletion and error checking.
-/**
- * @typedef {Object} Plan
- * @property {number} id
- * @property {string} name
- * @property {string} price
- * @property {string} currency
- * @property {string} interval - 'month' or 'year'
- * @property {number} user_id
- */
 
-/**
- * @typedef {Object} InitPaymentResponse
- * @property {string} boc_hash - A unique identifier for the payment attempt.
- * @property {string} to_wallet - The recipient creator's TON wallet address.
- * @property {string} amount - The transaction amount in nanotons (or nano-USDT).
- * @property {string} memo - The comment to be attached to the blockchain transaction.
- */
-
-/**
- * A wrapper around the native fetch API to automatically add the
- * Telegram Mini App authentication header and ngrok bypass header.
- * @param {string} path - The API endpoint path (e.g., '/dashboard/plans').
- * @param {RequestInit} [options] - Standard fetch() options (method, body, etc.).
- * @returns {Promise<any>} - The JSON response from the API.
- */
-export const fetchApi = async (path, options = {}) => {
-    const tg = window.Telegram?.WebApp;
-    if (!tg || !tg.initData) {
-        throw new Error("Telegram authentication data (initData) is not available. App must be run inside Telegram.");
-    }
-
-    const defaultHeaders = {
+// A helper function to add the required auth header to authenticated requests.
+const getAuthHeaders = () => {
+    return {
         'Content-Type': 'application/json',
-        'X-Telegram-Init-Data': tg.initData,
-        'ngrok-skip-browser-warning': 'true',
+        // The backend expects the raw initData string in this header for validation.
+        'X-Telegram-Init-Data': tg?.initData || '',
     };
-
-    const config = { ...options, headers: { ...defaultHeaders, ...options.headers } };
-    const response = await fetch(`${API_BASE_URL}${path}`, config);
-
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.detail || `Load failed (Status: ${response.status})`;
-        throw new Error(errorMessage);
-    }
-
-    if (response.status === 204) return null;
-    return response.json();
 };
 
 // --- API Functions ---
 
-/**
- * Fetches public details for a single plan.
- * @param {string | number} planId
- * @returns {Promise<Plan>}
- */
-export const getPublicPlanDetails = (planId) => fetchApi(`/public/plans/${planId}`);
+// Example of an authenticated request (for the dashboard)
+export const getMyAnalytics = async () => {
+    if (!tg?.initData) throw new Error("Telegram authentication data (initData) is not available.");
 
-/**
- * Initiates the payment process on the backend.
- * @param {{plan_id: number, telegram_id: number, username: string|null}} data
- * @returns {Promise<InitPaymentResponse>}
- */
-export const initTonPayment = (data) => fetchApi('/checkout/init-ton-payment', { method: 'POST', body: JSON.stringify(data) });
+    const response = await fetch(`${API_BASE_URL}/dashboard/analytics`, {
+        headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error((await response.json()).detail || 'Failed to fetch analytics');
+    return response.json();
+};
 
-/**
- * Asks the backend to verify a transaction.
- * @param {{boc_hash: string}} data
- * @returns {Promise<any>} // Returns a Subscription object on success
- */
-export const verifyTonPayment = (data) => fetchApi('/checkout/verify-ton-payment', { method: 'POST', body: JSON.stringify(data) });
+export const getMyPlans = async () => {
+    if (!tg?.initData) throw new Error("Telegram authentication data (initData) is not available.");
 
-/** @returns {Promise<Plan[]>} */
-export const getMyPlans = () => fetchApi('/dashboard/plans');
-export const createMyPlan = (planData) => fetchApi('/dashboard/plans', { method: 'POST', body: JSON.stringify(planData) });
-export const deleteMyPlan = (planId) => fetchApi(`/dashboard/plans/${planId}`, { method: 'DELETE' });
+    const response = await fetch(`${API_BASE_URL}/dashboard/plans`, {
+        headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error((await response.json()).detail || 'Failed to fetch plans');
+    return response.json();
+};
 
-export const getMyChannels = () => fetchApi('/dashboard/channels');
-export const getMyPaymentSettings = () => fetchApi('/dashboard/payment-settings');
-export const saveMyPaymentSettings = (settingsData) => fetchApi('/dashboard/payment-settings', { method: 'POST', body: JSON.stringify(settingsData) });
+export const getMyChannels = async () => {
+    if (!tg?.initData) throw new Error("Telegram authentication data (initData) is not available.");
 
-// New function for analytics
-export const getMyAnalytics = () => fetchApi('/dashboard/analytics');
+    const response = await fetch(`${API_BASE_URL}/dashboard/channels`, {
+        headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error((await response.json()).detail || 'Failed to fetch channels');
+    return response.json();
+};
+
+export const createMyPlan = async (planData) => {
+    if (!tg?.initData) throw new Error("Telegram authentication data (initData) is not available.");
+
+    const response = await fetch(`${API_BASE_URL}/dashboard/plans`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(planData),
+    });
+    if (!response.ok) throw new Error((await response.json()).detail || 'Failed to create plan');
+    return response.json();
+};
+
+export const deleteMyPlan = async (planId) => {
+    if (!tg?.initData) throw new Error("Telegram authentication data (initData) is not available.");
+
+    const response = await fetch(`${API_BASE_URL}/dashboard/plans/${planId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error((await response.json()).detail || 'Failed to delete plan');
+    // DELETE requests often return no content, so we don't call .json()
+    return true;
+};
+
+export const getMyPaymentSettings = async () => {
+    if (!tg?.initData) throw new Error("Telegram authentication data (initData) is not available.");
+
+    const response = await fetch(`${API_BASE_URL}/dashboard/payment-settings`, {
+        headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error((await response.json()).detail || 'Failed to fetch payment settings');
+    // It's possible for settings to be null, so we handle that.
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+        return null;
+    }
+    return response.json();
+};
+
+export const saveMyPaymentSettings = async (settingsData) => {
+    if (!tg?.initData) throw new Error("Telegram authentication data (initData) is not available.");
+
+    const response = await fetch(`${API_BASE_URL}/dashboard/payment-settings`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(settingsData),
+    });
+    if (!response.ok) throw new Error((await response.json()).detail || 'Failed to save payment settings');
+    return response.json();
+};
+
+
+// Example of a public request (for the checkout page)
+export const getPublicPlanDetails = async (planId) => {
+    const response = await fetch(`${API_BASE_URL}/public/plans/${planId}`);
+    if (!response.ok) throw new Error((await response.json()).detail || 'Failed to fetch plan details');
+    return response.json();
+};
+
+export const initTonPayment = async (initData) => {
+    const response = await fetch(`${API_BASE_URL}/checkout/init-ton-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(initData),
+    });
+    if (!response.ok) throw new Error((await response.json()).detail || 'Failed to initialize payment');
+    return response.json();
+};
+
+export const verifyTonPayment = async (verifyData) => {
+    const response = await fetch(`${API_BASE_URL}/checkout/verify-ton-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(verifyData),
+    });
+    if (!response.ok) throw new Error((await response.json()).detail || 'Failed to verify payment');
+    return response.json();
+};

@@ -2,14 +2,13 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { TonConnectButton, useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
-import { getPublicPlanDetails, initTonPayment, verifyTonPayment } from '../apiClient';
+import { getPublicPlanDetails, initTonPayment, verifyTonPayment, tg } from '../apiClient';
 import './CheckoutPage.css';
 
 function CheckoutPage() {
     const { planId } = useParams();
     const [tonConnectUI] = useTonConnectUI();
     const wallet = useTonWallet();
-    const tg = window.Telegram?.WebApp;
 
     /** @type {[import('../apiClient').Plan | null, Function]} */
     const [plan, setPlan] = useState(null);
@@ -17,6 +16,7 @@ function CheckoutPage() {
     const [error, setError] = useState(null);
     const [paymentStatus, setPaymentStatus] = useState('idle'); // idle, processing, verifying, success, failed
 
+    // Initialize the TMA interface
     useEffect(() => {
         if (tg) {
             tg.ready();
@@ -38,7 +38,7 @@ function CheckoutPage() {
 
     const handlePayment = async () => {
         if (!plan || !wallet || !tg?.initDataUnsafe?.user) {
-            tg.showAlert("Please connect your wallet. Make sure you are running this inside Telegram.");
+            tg.showAlert("Please connect your wallet and ensure you are running this inside Telegram.");
             return;
         }
 
@@ -61,8 +61,6 @@ function CheckoutPage() {
                 messages: [{
                     address: paymentDetails.to_wallet,
                     amount: paymentDetails.amount,
-                    // CRITICAL FIX: The memo should be a plain string. The wallet handles encoding it as a comment.
-                    // Do NOT use btoa() here.
                     payload: paymentDetails.memo
                 }]
             };
