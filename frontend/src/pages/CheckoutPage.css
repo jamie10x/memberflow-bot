@@ -1,0 +1,78 @@
+/* frontend/src/pages/CheckoutPage.css */
+
+.checkout-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-top: 20px;
+}
+
+.ton-connect-button-container {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+
+.checkout-page h1 {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+}
+
+.price-display {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.price-display span {
+    font-size: 0.5em;
+    font-weight: normal;
+    color: var(--app-hint-color);
+}
+
+.description {
+    color: var(--app-hint-color);
+    margin-bottom: 30px;
+}
+
+.pay-button {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1em;
+    font-weight: bold;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    background-color: var(--app-button-color);
+    color: var(--app-button-text-color);
+    margin-bottom: 15px;
+}
+
+.pay-button:disabled {
+    background-color: var(--app-section-bg-color);
+    color: var(--app-hint-color);
+    cursor: not-allowed;
+}
+
+.success-message {
+    color: #34c759; /* A standard green color */
+    font-weight: bold;
+    padding: 15px;
+    background-color: rgba(52, 199, 89, 0.1);
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.error-box {
+    color: #ff3b30; /* A standard red color */
+    padding: 15px;
+    background-color: rgba(255, 59, 48, 0.1);
+    border: 1px solid rgba(255, 59, 48, 0.2);
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+}
