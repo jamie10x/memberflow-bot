@@ -1,20 +1,23 @@
 // frontend/vite.config.js
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import legacy from '@vitejs/plugin-legacy' // <-- 1. IMPORT THE PLUGIN
 
-// https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [react()],
+    plugins: [
+        react(),
+        legacy({ // <-- 2. ADD THE PLUGIN CONFIGURATION
+            targets: ['defaults', 'not IE 11'],
+        }),
+    ],
+    // Your server config for local development is fine, no changes needed here.
     server: {
-        // This is the configuration you need to add
-        // The host must be '0.0.0.0' for the containerized app to be reachable
         host: '0.0.0.0',
         port: 5173,
-        // Add your ngrok domain to the list of allowed hosts
         hmr: {
             host: 'localhost',
         },
-        // add your ngrok domain to the list of allowed hosts
-        allowedHosts: ['https://memberflow-bot.onrender.com']
+        // This is a local setting, you'll need to update it if ngrok changes
+        allowedHosts: ['c55919e87a0e.ngrok-free.app']
     },
 })
