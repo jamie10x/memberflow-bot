@@ -5,9 +5,9 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 
-from .core.config import settings
-from .handlers.admin_handlers import admin_router
-from .handlers.user_handlers import user_router
+from bot.app.core.config import settings
+from bot.app.handlers.admin_handlers import admin_router
+from bot.app.handlers.user_handlers import user_router
 
 async def main():
     """
