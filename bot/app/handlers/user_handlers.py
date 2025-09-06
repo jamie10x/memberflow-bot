@@ -3,9 +3,9 @@ from aiogram import Router, types
 from aiogram.filters import CommandStart, Command
 import logging
 
-from bot.app.core.config import settings # Import settings
-from bot.app.keyboards.user_keyboards import get_dashboard_keyboard
-from bot.app.services.api_client import api_client
+from ..core.config import settings
+from ..keyboards.user_keyboards import get_dashboard_keyboard
+from ..services.api_client import api_client
 
 user_router = Router()
 
