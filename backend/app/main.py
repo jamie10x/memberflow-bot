@@ -3,7 +3,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 
-from backend.app.api.api import api_router
+from .api.api import api_router
 
 # Set up basic logging
 logging.basicConfig(level=logging.INFO)

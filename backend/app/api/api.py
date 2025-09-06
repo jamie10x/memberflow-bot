@@ -1,6 +1,6 @@
 # backend/app/api/api.py
 from fastapi import APIRouter
-from backend.app.api.endpoints import user, channel, plan, checkout, dashboard, public
+from .endpoints import user, channel, plan, checkout, dashboard, public
 
 api_router = APIRouter()
 
