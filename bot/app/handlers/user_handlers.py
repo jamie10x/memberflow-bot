@@ -3,8 +3,8 @@ from aiogram import Router, types
 from aiogram.filters import CommandStart, Command
 import logging
 
+from bot.app.core.config import settings # Import settings
 from bot.app.keyboards.user_keyboards import get_dashboard_keyboard
-# Import our new API client
 from bot.app.services.api_client import api_client
 
 user_router = Router()
@@ -18,14 +18,12 @@ async def cmd_start(message: types.Message):
     user = message.from_user
     logging.info(f"User {user.id} ({user.username}) started the bot.")
 
-    # --- API Integration ---
     try:
         response = await api_client.create_user(
             telegram_id=user.id,
             username=user.username
         )
 
-        # Check the response status from our backend
         if response.status_code == 201: # 201 Created
             logging.info(f"Successfully created new user in backend for {user.id}")
             await message.answer(
@@ -40,14 +38,13 @@ async def cmd_start(message: types.Message):
                 "It looks like you already have an account. To manage your channels or create plans, use the /dashboard command."
             )
         else:
-            # Handle unexpected errors from the backend
             logging.error(f"Failed to create user {user.id}. API response: {response.status_code} - {response.text}")
             await message.answer("Sorry, something went wrong on our end. Please try again later.")
 
     except Exception as e:
         logging.exception(f"An exception occurred while trying to create user {user.id}: {e}")
         await message.answer("Sorry, I couldn't connect to our services. Please try again in a moment.")
-    # -----------------------
+
 
 @user_router.message(Command("dashboard"))
 async def cmd_dashboard(message: types.Message):
@@ -55,10 +52,8 @@ async def cmd_dashboard(message: types.Message):
     Handler for the /dashboard command.
     Replies with a button to open the Mini App dashboard.
     """
-    # Update this line with your ngrok URL
-    webapp_url = "https://c55919e87a0e.ngrok-free.app"
-
+    # MODIFIED: URL is now loaded from config instead of being hardcoded.
     await message.answer(
         "Welcome to your MemberFlow dashboard! Here you can manage your plans, view subscribers, and track your revenue.",
-        reply_markup=get_dashboard_keyboard(webapp_url=webapp_url)
+        reply_markup=get_dashboard_keyboard(webapp_url=settings.MINI_APP_URL)
     )

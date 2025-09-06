@@ -8,9 +8,10 @@ class PlanBase(BaseModel):
     price: Decimal
     currency: str
     interval: PlanInterval
+    # ADDED: channel_id is now a required field when creating/reading a plan.
+    channel_id: int
 
 class PlanCreate(PlanBase):
-    # FIX: user_id is not needed here because it comes from the path.
     pass
 
 class Plan(PlanBase):

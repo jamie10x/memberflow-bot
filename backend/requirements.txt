@@ -24,3 +24,4 @@ pydantic-settings
 python-telegram-bot==22.3
 hypercorn
 pytonapi
+aiohttp

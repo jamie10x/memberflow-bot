@@ -19,6 +19,9 @@ class Plan(Base):
     interval = Column(Enum(PlanInterval), nullable=False)
 
     user_id = Column(Integer, ForeignKey("users.id"))
+    # ADDED: A plan now belongs to exactly one channel.
+    channel_id = Column(Integer, ForeignKey("channels.id"), nullable=False)
 
-    # FIX: Changed 'owner' to 'user' to match the User model's 'back_populates'
     user = relationship("User", back_populates="plans")
+    # ADDED: Relationship to the Channel model.
+    channel = relationship("Channel", back_populates="plans")

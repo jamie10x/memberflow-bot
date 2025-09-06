@@ -1,6 +1,6 @@
 # backend/app/api/api.py
 from fastapi import APIRouter
-from backend.app.api.endpoints import user, channel, plan, checkout, dashboard
+from backend.app.api.endpoints import user, channel, plan, checkout, dashboard, public
 
 api_router = APIRouter()
 
@@ -16,3 +16,4 @@ api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboar
 
 # Customer-facing checkout endpoints
 api_router.include_router(checkout.router, prefix="/checkout", tags=["checkout"])
+api_router.include_router(public.router, prefix="/public", tags=["public"])

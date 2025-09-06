@@ -2,26 +2,55 @@
 import React, { useState, useEffect } from 'react';
 import './CreatePlanForm.css';
 
-const CreatePlanForm = ({ onDataChange }) => { // Changed prop name for clarity
+const CreatePlanForm = ({ onDataChange, channels }) => { // Added channels prop
     const [name, setName] = useState('');
     const [price, setPrice] = useState('');
     const [interval, setInterval] = useState('month');
-    const [currency, setCurrency] = useState('USD');
+    const [currency] = useState('USD');
+    // ADDED: State to hold the selected channel ID
+    const [channelId, setChannelId] = useState('');
 
-    // This effect runs every time a form field's state changes.
+    // Set the default selected channel to the first one when the component mounts
     useEffect(() => {
-        // We report the current state of the form back to the parent component.
+        if (channels && channels.length > 0) {
+            setChannelId(channels[0].id);
+        }
+    }, [channels]);
+
+    useEffect(() => {
         onDataChange({
             name,
-            price: price ? parseFloat(price) : 0, // Ensure price is a number
+            price: price ? parseFloat(price) : 0,
             interval,
             currency,
+            channel_id: channelId ? parseInt(channelId, 10) : null, // Pass channel_id up
         });
-    }, [name, price, interval, currency, onDataChange]); // Dependency array
+    }, [name, price, interval, currency, channelId, onDataChange]);
 
     return (
-        // We don't need the <form> tag anymore since we are not using a traditional submit button.
         <div className="create-plan-form">
+            {/* ADDED: Channel selector dropdown */}
+            <div className="form-group">
+                <label htmlFor="plan-channel">Channel</label>
+                <select
+                    id="plan-channel"
+                    value={channelId}
+                    onChange={(e) => setChannelId(e.target.value)}
+                    required
+                    disabled={!channels || channels.length === 0}
+                >
+                    {channels && channels.length > 0 ? (
+                        channels.map(channel => (
+                            <option key={channel.id} value={channel.id}>
+                                {channel.title}
+                            </option>
+                        ))
+                    ) : (
+                        <option>Please connect a channel first</option>
+                    )}
+                </select>
+            </div>
+
             <div className="form-group">
                 <label htmlFor="plan-name">Plan Name</label>
                 <input

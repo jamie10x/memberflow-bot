@@ -12,3 +12,5 @@ class Channel(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
 
     user = relationship("User", back_populates="channels")
+    # ADDED: A channel can have multiple plans associated with it.
+    plans = relationship("Plan", back_populates="channel")

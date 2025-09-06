@@ -2,14 +2,14 @@
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Define the project's root directory.
 BASE_DIR = Path(__file__).resolve().parents[3]
 
 class Settings(BaseSettings):
     # These are loaded from the .env file
     DATABASE_URL: str
     SECRET_KEY: str
-    BOT_TOKEN: str  # <-- ADD THIS LINE
+    BOT_TOKEN: str
+    TONCENTER_API_KEY: str
 
     # These have default values
     ALGORITHM: str = "HS256"
@@ -20,5 +20,4 @@ class Settings(BaseSettings):
         extra='ignore'
     )
 
-# Create a single, reusable instance of the settings
 settings = Settings()

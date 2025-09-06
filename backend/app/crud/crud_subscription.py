@@ -1,38 +1,34 @@
 # backend/app/crud/crud_subscription.py
-from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
 
-from ..models import subscription as subscription_model
-from ..models import plan as plan_model # We need the plan to calculate the expiry
-from ..schemas import subscription as subscription_schema
+from datetime import datetime, timedelta, timezone
 
-def create_subscription(db: Session, subscriber_id: int, plan_id: int) -> subscription_model.Subscription:
+from sqlalchemy.orm import Session, joinedload
+
+from ..models import payment as payment_model
+from ..models import plan as plan_model
+from ..models import subscription as subscription_model, Subscription
+
+
+def create_subscription_from_payment(db: Session, payment: payment_model.Payment) -> subscription_model.Subscription:
     """
-    Creates a new subscription for a subscriber to a specific plan
-    and calculates the expiration date.
+    Creates a new subscription based on a completed payment.
     """
-    # 1. Fetch the plan to get its interval
-    plan = db.query(plan_model.Plan).filter(plan_model.Plan.id == plan_id).first()
+    plan = db.query(plan_model.Plan).filter(plan_model.Plan.id == payment.plan_id).first()
     if not plan:
-        # This should ideally not happen if the plan_id is validated,
-        # but it's good practice to handle it.
-        raise ValueError(f"Plan with id {plan_id} not found.")
+        raise ValueError(f"Plan with id {payment.plan_id} associated with payment not found.")
 
-    # 2. Calculate the expiration date
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     if plan.interval == plan_model.PlanInterval.month:
-        expires_at = now + timedelta(days=30) # Simple 30 days for now
+        expires_at = now + timedelta(days=30)
     elif plan.interval == plan_model.PlanInterval.year:
-        expires_at = now + timedelta(days=365) # Simple 365 days for now
+        expires_at = now + timedelta(days=365)
     else:
-        # Handle unexpected interval
         raise ValueError(f"Unknown plan interval: {plan.interval}")
 
-    # 3. Create the subscription record
     db_subscription = subscription_model.Subscription(
-        subscriber_id=subscriber_id,
-        plan_id=plan_id,
-        status=subscription_model.SubscriptionStatus.ACTIVE, # It's active upon creation
+        subscriber_id=payment.subscriber_id,
+        plan_id=payment.plan_id,
+        status=subscription_model.SubscriptionStatus.ACTIVE,
         start_date=now,
         expires_at=expires_at
     )
@@ -41,3 +37,25 @@ def create_subscription(db: Session, subscriber_id: int, plan_id: int) -> subscr
     db.commit()
     db.refresh(db_subscription)
     return db_subscription
+
+def get_active_subscriptions_by_creator(db: Session, creator_id: int) -> list[type[Subscription]]:
+    """
+    Fetches all active subscriptions for a given creator by joining through the plans table.
+    It eagerly loads the related plan and subscriber data to prevent extra queries.
+    """
+    now = datetime.now(timezone.utc)
+    return (
+        db.query(subscription_model.Subscription)
+        .join(plan_model.Plan)
+        .filter(
+            plan_model.Plan.user_id == creator_id,
+            subscription_model.Subscription.status == subscription_model.SubscriptionStatus.ACTIVE,
+            subscription_model.Subscription.expires_at > now
+        )
+        .options(
+            joinedload(subscription_model.Subscription.plan),
+            joinedload(subscription_model.Subscription.subscriber) # Eager load subscriber details
+        )
+        .order_by(subscription_model.Subscription.expires_at.desc())
+        .all()
+    )
